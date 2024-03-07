@@ -23,12 +23,17 @@ def generate_random_datas(count: int, last_id: int) -> list:
     return random_data
 
 
-def last_id(collection: list) -> int:
+def last_id(collection) -> int:
     '''Calculates last id + 1 in a collection'''
-    return collection.count_documents(filter={})
+    collection_length = collection.count_documents(filter={})
+    while True:
+        if not collection.find_one(filter={'ID': collection_length}):
+            break
+        collection_length += 1
+    return collection_length
 
 
-def show_all_datas(collection: list) -> None:
+def show_all_datas(collection) -> None:
     '''Show all datas in database'''
     all_datas = collection.find()
     for i, data in enumerate(all_datas):
@@ -45,14 +50,14 @@ def show_all_datas(collection: list) -> None:
         print('-'*20)
 
 
-def add_random_data(collection: list, count: int) -> None:
+def add_random_data(collection, count: int) -> None:
     '''Add random datas to database'''
 
     datas = generate_random_datas(count=count, last_id=last_id(collection=collection))
     collection.insert_many(datas)
 
 
-def add_data(collection: list) -> None:
+def add_data(collection) -> None:
     '''Add new data to the collection'''
 
     while True:
@@ -95,6 +100,14 @@ def add_data(collection: list) -> None:
     collection.insert_one(new_data)
 
 
+def delete_data(collection, data_id: int) -> None:
+    '''Delete a data with this id from a collection'''
+    collection.delete_one(filter={'ID': data_id})
+
+
+def update_data(collection, data_id: int) -> None:
+
+
 if __name__ == '__main__':
     client = MongoClient(host=DATABASE['host'], port=DATABASE['port'])
     # Create database
@@ -123,5 +136,14 @@ if __name__ == '__main__':
                 case 3:
                     # Add new data
                     add_data(collection=data_collection)
+                case 4:
+                    # Delete data
+                    while True:
+                        user_id = int(input('Please enter a data id: '))
+                        if data_collection.find_one(filter={'ID': user_id}):
+                            break
+                        print('This id is not existing! Please try again.')
+                    delete_data(collection=data_collection, data_id=user_id)
+
     except ValueError as error:
         print('ValueError:', error)
