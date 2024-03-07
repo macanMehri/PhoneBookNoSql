@@ -19,3 +19,10 @@ PROVICES = [
         'Tehran', 'Esfahan', 'Fars', 'Mazandaran', 'Golestan', 'Khorasan Shomali',
         'Khorasan Razavi', 'Khorasan Jonobi', 'Gilan', 
 ]
+
+MENU = '''
+0. Exit.
+1. Show all datas.
+2. Add random datas to database.
+3. Add new data.
+'''
