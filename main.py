@@ -1,7 +1,12 @@
+import logging
 import random
 from pymongo import MongoClient
 from local_settings import DATABASE
 from constants import *
+
+
+
+logging.basicConfig(filename='loggings.log')
 
 
 def generate_random_datas(count: int, last_id: int) -> list:
@@ -23,7 +28,7 @@ def generate_random_datas(count: int, last_id: int) -> list:
     return random_data
 
 
-def last_id(collection) -> int:
+def new_id(collection) -> int:
     '''Calculates last id + 1 in a collection'''
     collection_length = collection.count_documents(filter={})
     while True:
@@ -36,9 +41,9 @@ def last_id(collection) -> int:
 def show_all_datas(collection) -> None:
     '''Show all datas in database'''
     all_datas = collection.find()
-    for i, data in enumerate(all_datas):
+    for data in all_datas:
         print(
-            f'ID: {i}\n'
+            f'ID: {data['ID']}\n'
             f'First Name: {data['FirstName']}\n'
             f'Last Name: {data['LastName']}\n'
             f'Number: {data['Number']}\n',
@@ -53,7 +58,7 @@ def show_all_datas(collection) -> None:
 def add_random_data(collection, count: int) -> None:
     '''Add random datas to database'''
 
-    datas = generate_random_datas(count=count, last_id=last_id(collection=collection))
+    datas = generate_random_datas(count=count, last_id=new_id(collection=collection))
     collection.insert_many(datas)
 
 
@@ -89,6 +94,7 @@ def add_data(collection) -> None:
     house_name = input('Please enter your house name: ').capitalize()
 
     new_data = {
+        'ID': new_id(collection=collection),
         'FirstName': first_name,
         'LastName': last_name,
         'Number': number,
@@ -106,6 +112,68 @@ def delete_data(collection, data_id: int) -> None:
 
 
 def update_data(collection, data_id: int) -> None:
+    '''Update data info in a collection'''
+    filter_id = {'ID': data_id}
+    while True:
+        print('1. First name.\n'
+              '2. Last name.\n'
+              '3. Number.\n'
+              '4. Address.\n'
+              '0. Exit changing.'
+        )
+        order = int(input('What do you want to change? '))
+        match order:
+            case 0:
+                break
+            case 1:
+                while True:
+                    new_name = input('Please enter new name: ').capitalize()
+                    if not new_name.isnumeric() and len(new_name) > 3:
+                        break
+                    print('This name is not allowed! Please try again.')
+                new_name = {'$set': {'FirstName': new_name}}
+                collection.update_one(filter_id, new_name)
+            case 2:
+                while True:
+                    new_last_name = input('Please enter new last name: ').capitalize()
+                    if not new_last_name.isnumeric() and len(new_last_name) > 3:
+                        break
+                    print('This last name is not allowed! Please try again.')
+                new_last_name = {'$set': {'lastName': new_last_name}}
+                collection.update_one(filter_id, new_last_name)
+            case 3:
+                while True:
+                    new_number = input('Please enter new number: ')
+                    if new_number.isnumeric() and len(new_number) > 3:
+                        break
+                    print('This number is not allowed! Please try again.')
+                new_number = {'$set': {'Number': new_number}}
+                collection.update_one(filter_id, new_number)
+            case 4:
+                while True:
+                    provice = input('Please enter your provice: ').capitalize()
+                    if not provice.isnumeric() and len(provice) > 3:
+                        break
+                    print('This provice name is not allowed! Please try again.').capitalize()
+                while True:
+                    city = input('Please enter your city: ').capitalize()
+                    if not city.isnumeric() and len(city) > 3:
+                        break
+                    print('This city name is not allowed! Please try again.')
+                street = input('Please enter your street: ').capitalize()
+                house_name = input('Please enter your house name: ').capitalize()
+
+                provice = {'$set': {'Provice': provice}}
+                collection.update_one(filter_id, provice)
+
+                city = {'$set': {'City': city}}
+                collection.update_one(filter_id, city)
+
+                street = {'$set': {'Street': street}}
+                collection.update_one(filter_id, street)
+
+                house_name = {'$set': {'HouseName': house_name}}
+                collection.update_one(filter_id, house_name)
 
 
 if __name__ == '__main__':
@@ -144,6 +212,14 @@ if __name__ == '__main__':
                             break
                         print('This id is not existing! Please try again.')
                     delete_data(collection=data_collection, data_id=user_id)
+                case 5:
+                    # Update data
+                    while True:
+                        user_id = int(input('Please enter a data id: '))
+                        if data_collection.find_one(filter={'ID': user_id}):
+                            break
+                        print('This id is not existing! Please try again.')
+                    update_data(collection=data_collection, data_id=user_id)
 
     except ValueError as error:
         print('ValueError:', error)
