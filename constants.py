@@ -25,4 +25,6 @@ MENU = '''
 1. Show all datas.
 2. Add random datas to database.
 3. Add new data.
+4. Delete an existed data.
+5. Update an existed data.
 '''
